@@ -1,0 +1,28 @@
+import React from 'react';
+
+function CheckoutPage() {
+  return (
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-foreground mb-4">Checkout</h1>
+        <p className="text-muted-foreground text-lg">
+          Complete your purchase securely
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-card p-6 rounded-lg border border-border">
+          <h3 className="font-semibold mb-4 text-card-foreground">Shipping & Payment</h3>
+          <p className="text-muted-foreground">Checkout form will go here</p>
+        </div>
+        
+        <div className="bg-card p-6 rounded-lg border border-border">
+          <h3 className="font-semibold mb-4 text-card-foreground">Order Review</h3>
+          <p className="text-muted-foreground">Final order details will go here</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default CheckoutPage;
