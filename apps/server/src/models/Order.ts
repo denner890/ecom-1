@@ -111,7 +111,7 @@ orderSchema.index({ orderNumber: 1 });
 orderSchema.index({ status: 1 });
 
 // Generate order number before saving
-orderSchema.pre('save', async function(next) {
+orderSchema.pre('validate', function(next) {
   if (this.isNew && !this.orderNumber) {
     const timestamp = Date.now().toString(36);
     const random = Math.random().toString(36).substr(2, 5);

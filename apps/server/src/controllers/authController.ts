@@ -4,6 +4,7 @@ import { asyncHandler, createError } from '../middleware/errorHandler.js';
 import { RegisterRequest, LoginRequest, AuthResponse } from '../types/index.js';
 import logger from '../utils/logger.js';
 
+
 /**
  * Register new user with email/password
  * POST /api/auth/register

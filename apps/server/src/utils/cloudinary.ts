@@ -2,6 +2,8 @@ import { v2 as cloudinary } from 'cloudinary';
 import { Request } from 'express';
 import multer from 'multer';
 import logger from './logger.js';
+import asyncHandler from 'express-async-handler';
+import { Response } from 'express';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -18,7 +20,7 @@ export const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     // Check file type
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -161,8 +163,9 @@ export const handleImageUpload = asyncHandler(async (req: Request & { file?: Exp
  * Express route handler for multiple image uploads
  * POST /api/upload/images
  */
-export const handleMultipleImageUpload = asyncHandler(async (req: Request & { files?: Express.Multer.File[] }, res: Response) => {
-  if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+export const handleMultipleImageUpload = asyncHandler(async (req: Request, res: Response) => {
+  const files = req.files as Express.Multer.File[] | undefined;
+  if (!files || !Array.isArray(files) || files.length === 0) {
     res.status(400).json({
       ok: false,
       message: 'No image files provided',
@@ -171,7 +174,7 @@ export const handleMultipleImageUpload = asyncHandler(async (req: Request & { fi
   }
 
   try {
-    const uploadPromises = req.files.map((file, index) =>
+    const uploadPromises = files.map((file, index) =>
       uploadToCloudinary(
         file.buffer,
         'products',

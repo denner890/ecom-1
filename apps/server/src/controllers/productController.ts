@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Product } from '../models/Product.js';
 import { asyncHandler, createError } from '../middleware/errorHandler.js';
-import { CreateProductRequest, UpdateProductRequest, ProductQuery, PaginatedResponse } from '../types/index.js';
+import { CreateProductRequest, UpdateProductRequest, ProductQuery, } from '../types/index.js';
 import logger from '../utils/logger.js';
 
 /**
