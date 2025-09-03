@@ -2,7 +2,7 @@ import admin from 'firebase-admin';
 import logger from './logger.js';
 
 // Initialize Firebase Admin SDK
-let firebaseApp: admin.app.App;
+let firebaseApp: admin.app.App | undefined;
 
 try {
   // Initialize with service account (production)
