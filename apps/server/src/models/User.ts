@@ -40,12 +40,12 @@ const userSchema = new Schema<IUser>(
         /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
         'Please enter a valid email',
       ],
-    required: function(this: IUser) {
-      return this.provider === 'local';
-    }
+    },
     passwordHash: {
       type: String,
-      required: [true, 'Password is required'],
+      required: function(this: IUser) {
+        return this.provider === 'local';
+      },
       minlength: [6, 'Password must be at least 6 characters'],
       select: false, // Don't include password in queries by default
     },
@@ -54,25 +54,25 @@ const userSchema = new Schema<IUser>(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    provider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local'
+    },
+    firebaseUid: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
+    avatar: {
+      type: String,
+      default: null
+    }
   },
   {
     timestamps: true,
     toJSON: {
       transform: function (_doc, ret) {
-  },
-  provider: {
-    type: String,
-    enum: ['local', 'google'],
-    default: 'local'
-  },
-  firebaseUid: {
-    type: String,
-    unique: true,
-    sparse: true
-  },
-  avatar: {
-    type: String,
-    default: null
         (ret as any).passwordHash = undefined;
         return ret;
       },
