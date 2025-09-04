@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import { register, login, getMe } from '../controllers/authController.js';
+import { loginWithFirebase } from '../controllers/firebaseAuthController';
 import { requireAuth } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/errorHandler.js';
 
@@ -32,6 +33,13 @@ const loginValidation = [
 ];
 
 // Routes
+// Firebase Google OAuth login
+router.post('/firebase', [
+  body('idToken')
+    .notEmpty()
+    .withMessage('Firebase ID token is required')
+], validateRequest, loginWithFirebase);
+
 router.post('/register', registerValidation, validateRequest, register);
 router.post('/login', loginValidation, validateRequest, login);
 router.get('/me', requireAuth, getMe);

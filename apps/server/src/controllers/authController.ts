@@ -23,6 +23,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     name,
     email,
     passwordHash: password, // Will be hashed by pre-save middleware
+    provider: 'local'
   });
 
   // Generate JWT token
@@ -36,6 +37,8 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      provider: user.provider,
+      avatar: user.avatar,
     },
     token,
   };
@@ -60,6 +63,11 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     throw createError('Invalid credentials', 401);
   }
 
+  // Check if user is a local provider (has password)
+  if (user.provider !== 'local' || !user.passwordHash) {
+    throw createError('Please use Google sign-in for this account', 401);
+  }
+
   // Check password
   const isPasswordValid = await user.comparePassword(password);
   if (!isPasswordValid) {
@@ -77,6 +85,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      provider: user.provider,
+      avatar: user.avatar,
     },
     token,
   };
@@ -106,6 +116,8 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        provider: user.provider,
+        avatar: user.avatar,
         createdAt: user.createdAt,
       },
     },

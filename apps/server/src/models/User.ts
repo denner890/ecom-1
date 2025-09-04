@@ -9,8 +9,11 @@ export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
   role: 'user' | 'admin';
+  provider: 'local' | 'google';
+  firebaseUid?: string;
+  avatar?: string;
   createdAt: Date;
   updatedAt: Date;
 
@@ -37,7 +40,9 @@ const userSchema = new Schema<IUser>(
         /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
         'Please enter a valid email',
       ],
-    },
+    required: function(this: IUser) {
+      return this.provider === 'local';
+    }
     passwordHash: {
       type: String,
       required: [true, 'Password is required'],
@@ -54,6 +59,20 @@ const userSchema = new Schema<IUser>(
     timestamps: true,
     toJSON: {
       transform: function (_doc, ret) {
+  },
+  provider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
+  },
+  firebaseUid: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  avatar: {
+    type: String,
+    default: null
         (ret as any).passwordHash = undefined;
         return ret;
       },
@@ -63,6 +82,7 @@ const userSchema = new Schema<IUser>(
 
 // Index for performance
 userSchema.index({ email: 1 });
+userSchema.index({ firebaseUid: 1 });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {
@@ -81,6 +101,9 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
+  if (!this.passwordHash) {
+    return false;
+  }
   return bcrypt.compare(candidatePassword, this.passwordHash);
 };
 

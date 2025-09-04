@@ -47,6 +47,10 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface FirebaseLoginRequest {
+  idToken: string;
+}
+
 export interface AuthResponse {
   user: {
     id: string;

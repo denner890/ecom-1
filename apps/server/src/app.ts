@@ -15,9 +15,17 @@ import uploadRoutes from './routes/uploadRoutes.js';
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
 import logger from './utils/logger.js';
+import { initializeFirebase } from './utils/firebase';
 
 export function createServer() {
   const app = express();
+
+  // Initialize Firebase Admin SDK
+  try {
+    initializeFirebase();
+  } catch (error) {
+    logger.warn('Firebase initialization failed. Firebase auth will not be available:', error);
+  }
 
   // Security middleware
   app.use(helmet());
