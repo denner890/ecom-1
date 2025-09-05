@@ -1,4 +1,7 @@
 import { Request } from 'express';
+import { initializeFirebase } from '@/utils/firebase';
+
+
 
 // Extend Express Request interface
 declare global {
@@ -47,12 +50,19 @@ export interface LoginRequest {
   password: string;
 }
 
+
+export interface FirebaseLoginRequest {
+  idToken: string;
+}
+
 export interface AuthResponse {
   user: {
     id: string;
     name: string;
     email: string;
     role: 'user' | 'admin';
+    provider: string;
+    avatar?: string;
   };
   token: string;
 }

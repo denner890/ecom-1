@@ -5,12 +5,16 @@ import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
+
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
   role: 'user' | 'admin';
+  provider: 'local' | 'google' | 'firebase';
+  firebaseUid?: string;
+  avatar?: string;
   createdAt: Date;
   updatedAt: Date;
 
@@ -29,7 +33,9 @@ const userSchema = new Schema<IUser>(
     },
     email: {
       type: String,
-      required: [true, 'Email is required'],
+      required: function (this: IUser) {
+        return this.provider === 'local';
+      },
       unique: true,
       lowercase: true,
       trim: true,
@@ -40,14 +46,30 @@ const userSchema = new Schema<IUser>(
     },
     passwordHash: {
       type: String,
-      required: [true, 'Password is required'],
+      required: function (this: IUser) {
+        return this.provider === 'local';
+      },
       minlength: [6, 'Password must be at least 6 characters'],
-      select: false, // Don't include password in queries by default
+      select: false,
     },
     role: {
       type: String,
       enum: ['user', 'admin'],
       default: 'user',
+    },
+    provider: {
+      type: String,
+      enum: ['local', 'google', 'firebase'], // ✅ added firebase
+      default: 'local',
+    },
+    firebaseUid: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    avatar: {
+      type: String,
+      default: '',
     },
   },
   {
@@ -61,16 +83,19 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// Index for performance
+// Indexes
 userSchema.index({ email: 1 });
+userSchema.index({ firebaseUid: 1 });
 
-// Hash password before saving
+// Password hashing middleware
 userSchema.pre('save', async function (next) {
   if (!this.isModified('passwordHash')) return next();
 
   try {
     const salt = await bcrypt.genSalt(12);
-    this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+    if (typeof this.passwordHash === 'string') {
+      this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+    }
     next();
   } catch (error) {
     next(error as Error);
@@ -81,33 +106,29 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
+  if (!this.passwordHash) return false;
   return bcrypt.compare(candidatePassword, this.passwordHash);
 };
 
-// Generate auth token method
-// Generate auth token method
-// Generate auth token method
+// Generate JWT token
 userSchema.methods.generateAuthToken = function (): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     throw new Error('JWT_SECRET is not defined in the environment variables.');
   }
 
-  const expiresIn: string = process.env.JWT_EXPIRE || '7d';  // Default to '7d' if not defined
+  const expiresIn: string = process.env.JWT_EXPIRE || '7d';
 
-  // Ensure expiresIn is compatible with ms.StringValue (i.e., a string like '7d')
   const options: SignOptions = {
-    expiresIn: expiresIn as jwt.SignOptions['expiresIn'],  // Casting to ensure compatibility
+    expiresIn: expiresIn as jwt.SignOptions['expiresIn'],
   };
 
   return jwt.sign(
     { userId: this._id, role: this.role },
-    secret, // This will always be a string
-    options  // Pass the options explicitly
+    secret,
+    options
   );
 };
-
-
 
 const UserModel = mongoose.model<IUser>('User', userSchema);
 

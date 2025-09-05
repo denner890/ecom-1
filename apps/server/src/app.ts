@@ -15,10 +15,17 @@ import uploadRoutes from './routes/uploadRoutes.js';
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
 import logger from './utils/logger.js';
+import { initializeFirebase } from './utils/firebase';
 
 export function createServer() {
   const app = express();
 
+   // Initialize Firebase Admin SDK
+  try {
+    initializeFirebase();
+  } catch (error) {
+    logger.warn('Firebase initialization failed. Firebase auth will not be available:', error);
+  }
   // Security middleware
   app.use(helmet());
   app.use(compression());
@@ -57,13 +64,13 @@ export function createServer() {
   app.use(cookieParser());
 
   // Request logging
-  app.use((req, res, next) => {
+  app.use((req, _res, next) => {
     logger.info(`${req.method} ${req.path} - ${req.ip}`);
     next();
   });
 
   // Health check endpoint
-  app.get('/health', (req, res) => {
+  app.get('/health', (_req, res) => {
     res.status(200).json({
       ok: true,
       data: {

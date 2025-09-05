@@ -1,31 +1,42 @@
 import admin from 'firebase-admin';
 import logger from './logger.js';
 
-// Initialize Firebase Admin SDK
-let firebaseApp: admin.app.App;
+let firebaseApp: admin.app.App | undefined;
 
-try {
-  // Initialize with service account (production)
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-    
-    firebaseApp = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: process.env.FIREBASE_PROJECT_ID,
-    });
-  } 
-  // Initialize with default credentials (development)
-  else if (process.env.FIREBASE_PROJECT_ID) {
-    firebaseApp = admin.initializeApp({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-    });
-  }
-  
+/**
+ * Initialize Firebase Admin SDK
+ * Call this once at app startup before using other functions.
+ */
+export function initializeFirebase() {
   if (firebaseApp) {
-    logger.info('🔥 Firebase Admin SDK initialized');
+    // Already initialized
+    return firebaseApp;
   }
-} catch (error) {
-  logger.warn('Firebase Admin SDK not initialized:', error);
+
+  try {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+
+      firebaseApp = admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: process.env.FIREBASE_PROJECT_ID,
+      });
+    } else if (process.env.FIREBASE_PROJECT_ID) {
+      firebaseApp = admin.initializeApp({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+      });
+    }
+
+    if (firebaseApp) {
+      logger.info('🔥 Firebase Admin SDK initialized');
+    } else {
+      logger.warn('Firebase Admin SDK not initialized: No credentials or project ID found');
+    }
+  } catch (error) {
+    logger.warn('Firebase Admin SDK initialization error:', error);
+  }
+
+  return firebaseApp;
 }
 
 /**
@@ -34,20 +45,13 @@ try {
  * @returns Decoded token with user info
  */
 export async function verifyFirebaseToken(idToken: string) {
-  try {
-    if (!firebaseApp) {
-      throw new Error('Firebase not initialized');
-    }
+  if (!firebaseApp) {
+    throw new Error('Firebase not initialized. Call initializeFirebase() first.');
+  }
 
+  try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    
-    return {
-      uid: decodedToken.uid,
-      email: decodedToken.email,
-      name: decodedToken.name,
-      picture: decodedToken.picture,
-      emailVerified: decodedToken.email_verified,
-    };
+    return decodedToken;
   } catch (error) {
     logger.error('Firebase token verification failed:', error);
     return null;
@@ -60,11 +64,11 @@ export async function verifyFirebaseToken(idToken: string) {
  * @param additionalClaims - Additional claims to include
  */
 export async function createCustomToken(uid: string, additionalClaims?: object) {
-  try {
-    if (!firebaseApp) {
-      throw new Error('Firebase not initialized');
-    }
+  if (!firebaseApp) {
+    throw new Error('Firebase not initialized. Call initializeFirebase() first.');
+  }
 
+  try {
     const customToken = await admin.auth().createCustomToken(uid, additionalClaims);
     return customToken;
   } catch (error) {
@@ -78,11 +82,11 @@ export async function createCustomToken(uid: string, additionalClaims?: object) 
  * @param uid - Firebase user UID
  */
 export async function getFirebaseUser(uid: string) {
-  try {
-    if (!firebaseApp) {
-      throw new Error('Firebase not initialized');
-    }
+  if (!firebaseApp) {
+    throw new Error('Firebase not initialized. Call initializeFirebase() first.');
+  }
 
+  try {
     const userRecord = await admin.auth().getUser(uid);
     return {
       uid: userRecord.uid,
@@ -105,11 +109,11 @@ export async function getFirebaseUser(uid: string) {
  * @param properties - Properties to update
  */
 export async function updateFirebaseUser(uid: string, properties: admin.auth.UpdateRequest) {
-  try {
-    if (!firebaseApp) {
-      throw new Error('Firebase not initialized');
-    }
+  if (!firebaseApp) {
+    throw new Error('Firebase not initialized. Call initializeFirebase() first.');
+  }
 
+  try {
     const userRecord = await admin.auth().updateUser(uid, properties);
     return userRecord;
   } catch (error) {
@@ -123,11 +127,11 @@ export async function updateFirebaseUser(uid: string, properties: admin.auth.Upd
  * @param uid - Firebase user UID
  */
 export async function deleteFirebaseUser(uid: string) {
-  try {
-    if (!firebaseApp) {
-      throw new Error('Firebase not initialized');
-    }
+  if (!firebaseApp) {
+    throw new Error('Firebase not initialized. Call initializeFirebase() first.');
+  }
 
+  try {
     await admin.auth().deleteUser(uid);
     logger.info(`Firebase user deleted: ${uid}`);
   } catch (error) {
@@ -136,4 +140,5 @@ export async function deleteFirebaseUser(uid: string) {
   }
 }
 
+// Export firebaseApp so it can be used directly if needed (after initialization)
 export { firebaseApp };
