@@ -2,10 +2,20 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Truck, Shield, HeadphonesIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
+import { productApi } from '@/lib/api';
+import { formatPrice } from '@/lib/utils';
 
 function HomePage() {
+  const { data: productsData } = useQuery({
+    queryKey: ['products', { limit: 6 }],
+    queryFn: () => productApi.getAll({ limit: 6 }),
+  });
+
+  const featuredProducts = productsData?.data?.items || [];
+
   return (
     <div>
       {/* Hero Section */}
@@ -39,6 +49,75 @@ function HomePage() {
               </Link>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Products Section */}
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Featured Products</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Discover our most popular items, carefully selected for quality and style.
+            </p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredProducts.map((product, index) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <Link to={`/product/${product.slug}`}>
+                  <Card className="hover:shadow-lg transition-all duration-200 hover:scale-105 cursor-pointer bg-card border-border overflow-hidden">
+                    <div className="aspect-square overflow-hidden">
+                      <img 
+                        src={product.images[0] || 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg'} 
+                        alt={product.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-card-foreground mb-2">{product.title}</h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-lg font-bold text-primary">{formatPrice(product.price)}</span>
+                          {product.compareAtPrice && (
+                            <span className="text-sm text-muted-foreground line-through">
+                              {formatPrice(product.compareAtPrice)}
+                            </span>
+                          )}
+                        </div>
+                        {product.stock > 0 ? (
+                          <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">In Stock</span>
+                        ) : (
+                          <span className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded">Out of Stock</span>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-12">
+            <Link to="/shop">
+              <Button size="lg" variant="outline">
+                View All Products
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 

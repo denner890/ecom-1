@@ -1,6 +1,33 @@
 import React from 'react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Search, Filter } from 'lucide-react';
+import { productApi } from '@/lib/api';
+import { formatPrice } from '@/lib/utils';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import { Card, CardContent } from '@/components/ui/Card';
 
 function ShopPage() {
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('');
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState('-createdAt');
+
+  const { data: productsData, isLoading } = useQuery({
+    queryKey: ['products', { page, search, category, sort }],
+    queryFn: () => productApi.getAll({ page, limit: 12, search, category, sort }),
+  });
+
+  const products = productsData?.data?.items || [];
+  const pagination = productsData?.data?.pagination;
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1); // Reset to first page when searching
+  };
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">

@@ -1,23 +1,19 @@
 export interface Product {
   id: string;
-  name: string;
+  title: string;
   slug: string;
   description: string;
   price: number;
   compareAtPrice?: number;
   images: string[];
   category: string;
-  tags: string[];
+  stock: number;
   variants?: {
-    sizes?: string[];
-    colors?: string[];
-    [key: string]: any;
-  };
-  inStock: boolean;
-  stockCount?: number;
-  featured: boolean;
-  rating?: number;
-  reviewCount?: number;
+    name: string;
+    values: string[];
+  }[];
+  isActive: boolean;
+  discountPercent?: number;
   createdAt: string;
   updatedAt: string;
 }

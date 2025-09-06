@@ -14,9 +14,21 @@ const apiClient = axios.create({
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth-token');
+    const token = localStorage.getItem('auth-storage');
+    let parsedToken = null;
+    
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      try {
+        const authData = JSON.parse(token);
+        parsedToken = authData.state?.token;
+      } catch (e) {
+        // Fallback for direct token storage
+        parsedToken = token;
+      }
+    }
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${parsedToken}`;
     }
     return config;
   },
@@ -29,7 +41,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Handle unauthorized - redirect to login
-      localStorage.removeItem('auth-token');
+      localStorage.removeItem('auth-storage');
       window.location.href = '/auth/login';
     }
     return Promise.reject(error);
@@ -54,6 +66,8 @@ export const productApi = {
 export const authApi = {
   login: (credentials: any) => 
     apiClient.post('/auth/login', credentials).then(res => res.data),
+  loginWithFirebase: (idToken: string) =>
+    apiClient.post('/auth/firebase', { idToken }).then(res => res.data),
   register: (userData: any) => 
     apiClient.post('/auth/register', userData).then(res => res.data),
   logout: () => 

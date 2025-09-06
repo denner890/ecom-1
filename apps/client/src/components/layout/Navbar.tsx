@@ -53,12 +53,21 @@ function Navbar() {
             </Link>
 
             {isAuthenticated ? (
-              <Link to="/dashboard">
-                <Button variant="ghost" size="sm">
-                  <User className="h-5 w-5 mr-2" />
-                  {user?.displayName || 'Account'}
-                </Button>
-              </Link>
+              <div className="flex items-center space-x-2">
+                <Link to="/dashboard">
+                  <Button variant="ghost" size="sm">
+                    <User className="h-5 w-5 mr-2" />
+                    {user?.name || 'Account'}
+                  </Button>
+                </Link>
+                {user?.role === 'admin' && (
+                  <Link to="/admin">
+                    <Button variant="outline" size="sm">
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+              </div>
             ) : (
               <div className="flex items-center space-x-2">
                 <Link to="/auth/login">
