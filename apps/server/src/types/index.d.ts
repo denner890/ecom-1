@@ -50,7 +50,10 @@ export interface LoginRequest {
   password: string;
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
 export interface FirebaseLoginRequest {
   idToken: string;
 }

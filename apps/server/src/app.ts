@@ -20,12 +20,20 @@ import { initializeFirebase } from './utils/firebase';
 export function createServer() {
   const app = express();
 
+<<<<<<< HEAD
    // Initialize Firebase Admin SDK
+=======
+  // Initialize Firebase Admin SDK
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
   try {
     initializeFirebase();
   } catch (error) {
     logger.warn('Firebase initialization failed. Firebase auth will not be available:', error);
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
   // Security middleware
   app.use(helmet());
   app.use(compression());

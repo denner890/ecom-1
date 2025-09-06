@@ -33,7 +33,11 @@ const loginValidation = [
 ];
 
 // Routes
+<<<<<<< HEAD
 
+=======
+// Firebase Google OAuth login
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
 router.post('/firebase', [
   body('idToken')
     .notEmpty()

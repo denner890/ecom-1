@@ -12,7 +12,11 @@ export interface IUser extends Document {
   email: string;
   passwordHash?: string;
   role: 'user' | 'admin';
+<<<<<<< HEAD
   provider: 'local' | 'google' | 'firebase';
+=======
+  provider: 'local' | 'google';
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
   firebaseUid?: string;
   avatar?: string;
   createdAt: Date;
@@ -46,7 +50,11 @@ const userSchema = new Schema<IUser>(
     },
     passwordHash: {
       type: String,
+<<<<<<< HEAD
       required: function (this: IUser) {
+=======
+      required: function(this: IUser) {
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
         return this.provider === 'local';
       },
       minlength: [6, 'Password must be at least 6 characters'],
@@ -59,18 +67,32 @@ const userSchema = new Schema<IUser>(
     },
     provider: {
       type: String,
+<<<<<<< HEAD
       enum: ['local', 'google', 'firebase'], // ✅ added firebase
       default: 'local',
+=======
+      enum: ['local', 'google'],
+      default: 'local'
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
     },
     firebaseUid: {
       type: String,
       unique: true,
+<<<<<<< HEAD
       sparse: true,
     },
     avatar: {
       type: String,
       default: '',
     },
+=======
+      sparse: true
+    },
+    avatar: {
+      type: String,
+      default: null
+    }
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
   },
   {
     timestamps: true,
@@ -106,7 +128,13 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
+<<<<<<< HEAD
   if (!this.passwordHash) return false;
+=======
+  if (!this.passwordHash) {
+    return false;
+  }
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
   return bcrypt.compare(candidatePassword, this.passwordHash);
 };
 

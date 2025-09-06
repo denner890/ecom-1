@@ -1,6 +1,7 @@
 import admin from 'firebase-admin';
-import logger from './logger.js';
+import { logger } from './logger';
 
+<<<<<<< HEAD
 let firebaseApp: admin.app.App | undefined;
 
 /**
@@ -51,13 +52,55 @@ export async function verifyFirebaseToken(idToken: string) {
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
+=======
+let firebaseApp: admin.app.App | null = null;
+
+export const initializeFirebase = (): admin.app.App => {
+  if (firebaseApp) {
+    return firebaseApp;
+  }
+
+  try {
+    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+
+    if (!serviceAccountKey || !projectId) {
+      throw new Error('Firebase configuration missing. Please set FIREBASE_SERVICE_ACCOUNT_KEY and FIREBASE_PROJECT_ID');
+    }
+
+    let serviceAccount;
+    try {
+      serviceAccount = JSON.parse(serviceAccountKey);
+    } catch (error) {
+      throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_KEY format. Must be valid JSON');
+    }
+
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: projectId
+    });
+
+    logger.info('Firebase Admin SDK initialized successfully');
+    return firebaseApp;
+  } catch (error) {
+    logger.error('Failed to initialize Firebase Admin SDK:', error);
+    throw error;
+  }
+};
+
+export const verifyFirebaseToken = async (idToken: string): Promise<admin.auth.DecodedIdToken> => {
+  try {
+    const app = initializeFirebase();
+    const decodedToken = await app.auth().verifyIdToken(idToken);
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
     return decodedToken;
   } catch (error) {
     logger.error('Firebase token verification failed:', error);
-    return null;
+    throw new Error('Invalid Firebase token');
   }
-}
+};
 
+<<<<<<< HEAD
 /**
  * Create custom Firebase token for user
  * @param uid - User ID
@@ -142,3 +185,9 @@ export async function deleteFirebaseUser(uid: string) {
 
 // Export firebaseApp so it can be used directly if needed (after initialization)
 export { firebaseApp };
+=======
+export const getFirebaseAuth = (): admin.auth.Auth => {
+  const app = initializeFirebase();
+  return app.auth();
+};
+>>>>>>> 609f8954c60f925ccf24f1a23712c8e88f626680
